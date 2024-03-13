@@ -1,26 +1,48 @@
 from common import *
 
-def calculate_part_sum(input_file):
-    symbols = '!@#$%^&*()-_=+[{]}\|;:/?><,'
+def calculate_part_sum(input_file, gear_ratios = False):
     input_lines = open(input_file, 'r')
     input_matrix = []
     for line in input_lines:
         input_matrix.append(line.strip())
     numbers = set()
-    for i in range(len(input_matrix)):
-        for j in range(len(input_matrix[0])):
-            if input_matrix[i][j] in symbols:
-                temp_result = check_neighbors((i,j),input_matrix)
-                for item in temp_result:
-                    numbers.add(item)
-    result = 0
-    for number in numbers:
-        left = number[0]
-        right = number[1]
-        part_text = input_matrix[left[0]][left[1]:right[1]+1]
-        part_number = int(part_text)
-        result += part_number
-    return result
+    if gear_ratios:
+        symbols = '*'
+        neighbor_count = 2
+        result = 0
+        for i in range(len(input_matrix)):
+            for j in range(len(input_matrix[0])):
+                if input_matrix[i][j] in symbols:
+                    temp_result = check_neighbors((i,j), input_matrix, neighbor_count)
+                    gr = 1
+                    if temp_result:
+                        for item in temp_result:
+                            row = item[0][0]
+                            start = item[0][1]
+                            end = item[1][1] + 1
+                            line = input_matrix[row]
+                            gr = gr * int(line[start:end])
+                        result = result + gr
+        return result
+
+    else:
+        symbols = '!@#$%^&*()-_=+[{]}\|;:/?><,'
+        neighbor_count = 0
+        for i in range(len(input_matrix)):
+            for j in range(len(input_matrix[0])):
+                if input_matrix[i][j] in symbols:
+                    temp_result = check_neighbors((i,j), input_matrix, neighbor_count)
+                    if temp_result:
+                        for item in temp_result:
+                            numbers.add(item)
+        result = 0
+        for number in numbers:
+            left = number[0]
+            right = number[1]
+            part_text = input_matrix[left[0]][left[1]:right[1]+1]
+            part_number = int(part_text)
+            result += part_number
+        return result
 
 def print_indexed(in_line, line_number):
     count = 0
@@ -62,7 +84,7 @@ def get_number_bounds(coords, matrix):
     right = (i, j)
     return (left, right)
 
-def check_neighbors(coords, matrix):
+def check_neighbors(coords, matrix, neighbor_count):
     i = coords[0]   # Row
     j = coords[1]   # Column
     result = set()
@@ -95,4 +117,8 @@ def check_neighbors(coords, matrix):
         if right:
             if matrix[i+1][j+1] in numbers:
                 result.add(get_number_bounds((i+1, j+1), matrix))
-    return result
+    if neighbor_count:
+        if len(result) == neighbor_count:
+            return result
+    else:
+        return result
