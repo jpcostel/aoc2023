@@ -1,10 +1,7 @@
-import re
+from common import *
+# import re
 
 debug = False
-
-def dprint(text):
-    if debug:
-        print(text)
 
 def get_cal_sum(in_file):
     lines = open(in_file, 'r')
